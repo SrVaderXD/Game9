@@ -6,23 +6,28 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-public class Game extends Canvas implements Runnable, KeyListener {
+public class Game extends Canvas implements Runnable, KeyListener, MouseListener {
 	private static final long serialVersionUID = 1L;
 	public static final int WIDTH = 300, HEIGHT = 300;
-	public int PLAYER = 1, OPPONENT = -1, CURRENT = PLAYER;
+	private int PLAYER = 1, OPPONENT = -1, CURRENT = PLAYER;
 
-	public BufferedImage PLAYER_SPRITE, OPPONENT_SPRITE;
-	public int[][] BOARD = new int[3][3];
+	private BufferedImage PLAYER_SPRITE, OPPONENT_SPRITE;
+	private int[][] BOARD = new int[3][3];
+	private boolean pressed = false;
+	private int mx, my;
 
 	public Game() {
 		this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		this.addKeyListener(this);
+		this.addMouseListener(this);
 		try {
 			PLAYER_SPRITE = ImageIO.read(getClass().getResource("/player.png"));
 			OPPONENT_SPRITE = ImageIO.read(getClass().getResource("/opponent.png"));
@@ -33,10 +38,20 @@ public class Game extends Canvas implements Runnable, KeyListener {
 
 	public void tick() {
 		if (CURRENT == PLAYER) {
-
+			if (pressed) {
+				pressed = false;
+				mx /= 100;
+				my /= 100;
+				if (BOARD[mx][my] == 0) {
+					BOARD[mx][my] = PLAYER;
+					CURRENT = OPPONENT;
+				}
+			}
 		} else if (CURRENT == OPPONENT) {
 
 		}
+
+		// resetBoard();
 	}
 
 	public void render() {
@@ -49,14 +64,14 @@ public class Game extends Canvas implements Runnable, KeyListener {
 		g.setColor(Color.white);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 
-		for (int xx = 0; xx < BOARD.length; xx++) {
-			for (int yy = 0; yy < BOARD.length; yy++) {
+		for (int i = 0; i < BOARD.length; i++) {
+			for (int j = 0; j < BOARD.length; j++) {
 				g.setColor(Color.black);
-				g.drawRect(xx * 100, yy * 100, 100, 100);
-				if (BOARD[xx][yy] == PLAYER) {
-					g.drawImage(PLAYER_SPRITE, xx * 100, yy * 100, null);
-				} else if (BOARD[xx][yy] == OPPONENT) {
-					g.drawImage(OPPONENT_SPRITE, xx * 100, yy * 100, null);
+				g.drawRect(i * 100, j * 100, 100, 100);
+				if (BOARD[i][j] == PLAYER) {
+					g.drawImage(PLAYER_SPRITE, i * 100 + 25, j * 100 + 25, 50, 50, null);
+				} else if (BOARD[i][j] == OPPONENT) {
+					g.drawImage(OPPONENT_SPRITE, i * 100 + 25, j * 100 + 25, 50, 50, null);
 				}
 			}
 		}
@@ -101,6 +116,41 @@ public class Game extends Canvas implements Runnable, KeyListener {
 	}
 
 	public void keyTyped(KeyEvent arg0) {
+
+	}
+
+	private void resetBoard() {
+		for (int i = 0; i < BOARD.length; i++) {
+			for (int j = 0; j < BOARD.length; j++) {
+				BOARD[i][j] = 0;
+			}
+		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		pressed = true;
+		mx = e.getX();
+		my = e.getY();
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
 
 	}
 
