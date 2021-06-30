@@ -11,13 +11,15 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 public class Game extends Canvas implements Runnable, KeyListener, MouseListener {
 	private static final long serialVersionUID = 1L;
 	public static final int WIDTH = 300, HEIGHT = 300;
-	private int PLAYER = 1, OPPONENT = -1, CURRENT = PLAYER;
+	private int PLAYER = 1, OPPONENT = -1, CURRENT = OPPONENT;
 	private boolean reset = false;
 
 	private BufferedImage PLAYER_SPRITE, OPPONENT_SPRITE;
@@ -108,14 +110,76 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				}
 			}
 		} else if (CURRENT == OPPONENT) {
-
+			minMax();
 		}
+	}
+
+	private void minMax() {
+		for (int xx = 0; xx < BOARD.length; xx++) {
+			for (int yy = 0; yy < BOARD.length; yy++) {
+				if (BOARD[xx][yy] == 0) {
+					Node bestMove = getBestMove(xx, yy, 0, OPPONENT);
+
+					BOARD[bestMove.x][bestMove.y] = OPPONENT;
+
+					CURRENT = PLAYER;
+					return;
+				}
+			}
+		}
+	}
+
+	public Node getBestMove(int x, int y, int depth, int turno) {
+		if (checkStatus() == PLAYER) {
+			return new Node(x, y, depth - 10, depth);
+		} else if (checkStatus() == OPPONENT) {
+			return new Node(x, y, 10 - depth, depth);
+		} else if (checkStatus() == 0) {
+			return new Node(x, y, 0, depth);
+		}
+
+		List<Node> nodes = new ArrayList<Node>();
+
+		for (int xx = 0; xx < BOARD.length; xx++) {
+			for (int yy = 0; yy < BOARD.length; yy++) {
+
+				if (BOARD[xx][yy] == 0) {
+					Node node;
+					if (turno == PLAYER) {
+						BOARD[xx][yy] = PLAYER;
+						node = getBestMove(xx, yy, depth + 1, OPPONENT);
+						BOARD[xx][yy] = 0;
+					} else {
+						BOARD[xx][yy] = OPPONENT;
+						node = getBestMove(xx, yy, depth + 1, PLAYER);
+						BOARD[xx][yy] = 0;
+					}
+					nodes.add(node);
+				}
+			}
+		}
+
+		Node finalNode = nodes.get(0);
+		for (int i = 0; i < nodes.size(); i++) {
+			Node n = nodes.get(i);
+			if (turno == PLAYER) {
+				if (n.score > finalNode.score) {
+					finalNode = n;
+				}
+			} else {
+				if (n.score < finalNode.score) {
+					finalNode = n;
+				}
+			}
+		}
+
+		return finalNode;
+
 	}
 
 	private void resetBoard() {
 		if (reset) {
 			reset = false;
-			CURRENT = PLAYER;
 			pressed = false;
 			for (int i = 0; i < BOARD.length; i++) {
 				for (int j = 0; j < BOARD.length; j++) {
@@ -214,7 +278,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	public void mouseClicked(MouseEvent e) {
 
 	}
-	
 
 	@Override
 	public void mousePressed(MouseEvent e) {
