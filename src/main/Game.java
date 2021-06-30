@@ -18,6 +18,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	private static final long serialVersionUID = 1L;
 	public static final int WIDTH = 300, HEIGHT = 300;
 	private int PLAYER = 1, OPPONENT = -1, CURRENT = PLAYER;
+	private boolean reset = false;
 
 	private BufferedImage PLAYER_SPRITE, OPPONENT_SPRITE;
 	private int[][] BOARD = new int[3][3];
@@ -37,21 +38,9 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	}
 
 	public void tick() {
-		if (CURRENT == PLAYER) {
-			if (pressed) {
-				pressed = false;
-				mx /= 100;
-				my /= 100;
-				if (BOARD[mx][my] == 0) {
-					BOARD[mx][my] = PLAYER;
-					CURRENT = OPPONENT;
-				}
-			}
-		} else if (CURRENT == OPPONENT) {
-
-		}
-
-		// resetBoard();
+		turn();
+		matchResult();
+		resetBoard();
 	}
 
 	public void render() {
@@ -107,30 +96,125 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 	}
 
-	public void keyPressed(KeyEvent e) {
+	private void turn() {
+		if (CURRENT == PLAYER) {
+			if (pressed) {
+				pressed = false;
+				mx /= 100;
+				my /= 100;
+				if (BOARD[mx][my] == 0) {
+					BOARD[mx][my] = PLAYER;
+					CURRENT = OPPONENT;
+				}
+			}
+		} else if (CURRENT == OPPONENT) {
 
-	}
-
-	public void keyReleased(KeyEvent arg0) {
-
-	}
-
-	public void keyTyped(KeyEvent arg0) {
-
+		}
 	}
 
 	private void resetBoard() {
-		for (int i = 0; i < BOARD.length; i++) {
-			for (int j = 0; j < BOARD.length; j++) {
-				BOARD[i][j] = 0;
+		if (reset) {
+			reset = false;
+			CURRENT = PLAYER;
+			pressed = false;
+			for (int i = 0; i < BOARD.length; i++) {
+				for (int j = 0; j < BOARD.length; j++) {
+					BOARD[i][j] = 0;
+				}
 			}
 		}
+	}
+
+	private int checkStatus() {
+		int primDiagPlayer = 0, primDiagEnemy = 0, secDiagPlayer = 0, secDiagEnemy = 0, checkTie = 0;
+		for (int i = 0; i < BOARD.length; i++) {
+			// HORIZONTAL CHECK
+			if (BOARD[i][0] == PLAYER && BOARD[i][1] == PLAYER && BOARD[i][2] == PLAYER) {
+				return PLAYER;
+			} else if (BOARD[i][0] == OPPONENT && BOARD[i][1] == OPPONENT && BOARD[i][2] == OPPONENT) {
+				return OPPONENT;
+			}
+
+			// PRIMARY DIAGONAL CHECK
+			if (BOARD[i][i] == PLAYER) {
+				primDiagPlayer++;
+			} else if (BOARD[i][i] == OPPONENT) {
+				primDiagEnemy++;
+			}
+
+			if (primDiagPlayer == 3) {
+				return PLAYER;
+			}
+
+			if (primDiagEnemy == 3) {
+				return OPPONENT;
+			}
+
+			for (int j = 0; j < BOARD.length; j++) {
+				// VERTICAL CHECK
+				if (BOARD[0][j] == PLAYER && BOARD[1][j] == PLAYER && BOARD[2][j] == PLAYER) {
+					return PLAYER;
+				} else if (BOARD[0][j] == OPPONENT && BOARD[1][j] == OPPONENT && BOARD[2][j] == OPPONENT) {
+					return OPPONENT;
+				}
+
+				// SECONDARY DIAGONAL CHECK
+				if ((i + j) == (BOARD.length - 1)) {
+					if (BOARD[i][j] == PLAYER) {
+						secDiagPlayer++;
+					} else if (BOARD[i][j] == OPPONENT) {
+						secDiagEnemy++;
+					}
+
+					if (secDiagPlayer == 3) {
+						return PLAYER;
+					}
+
+					if (secDiagEnemy == 3) {
+						return OPPONENT;
+					}
+				}
+
+				// TIE CHECK
+				if (BOARD[i][j] != 0)
+					checkTie++;
+			}
+
+			if (checkTie == BOARD.length * BOARD[0].length)
+				return 0;
+		}
+		return -10;
+	}
+
+	private void matchResult() {
+		if (checkStatus() == PLAYER) {
+			System.out.println("PLAYER IS THE WINNER");
+		} else if (checkStatus() == OPPONENT) {
+			System.out.println("YOUR OPPONENT IS THE WINNER");
+		} else if (checkStatus() == 0) {
+			System.out.println("TIE");
+		}
+	}
+
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_R) {
+			reset = true;
+		}
+	}
+
+	public void keyReleased(KeyEvent e) {
+
+	}
+
+	public void keyTyped(KeyEvent e) {
+
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
 
 	}
+	
 
 	@Override
 	public void mousePressed(MouseEvent e) {
