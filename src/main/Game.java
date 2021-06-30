@@ -129,7 +129,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		}
 	}
 
-	public Node getBestMove(int x, int y, int depth, int turno) {
+	public Node getBestMove(int x, int y, int depth, int turn) {
 		if (checkStatus() == PLAYER) {
 			return new Node(x, y, depth - 10, depth);
 		} else if (checkStatus() == OPPONENT) {
@@ -145,7 +145,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 				if (BOARD[xx][yy] == 0) {
 					Node node;
-					if (turno == PLAYER) {
+					if (turn == PLAYER) {
 						BOARD[xx][yy] = PLAYER;
 						node = getBestMove(xx, yy, depth + 1, OPPONENT);
 						BOARD[xx][yy] = 0;
@@ -162,7 +162,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		Node finalNode = nodes.get(0);
 		for (int i = 0; i < nodes.size(); i++) {
 			Node n = nodes.get(i);
-			if (turno == PLAYER) {
+			if (turn == PLAYER) {
 				if (n.score > finalNode.score) {
 					finalNode = n;
 				}
